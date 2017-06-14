@@ -28,7 +28,7 @@
                     <div class="form-group">
                     <div class="col-md-6 col-md-offset-4">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-btn fa-envelope"></i> Kirim Link Reset Password
+                            <i class="fa fa-btn fa-envelope"></i><span class="glyphicon glyphicon-edit"></span> Kirim Link Reset Password
                         </button>
                     </div>
                 </div>
