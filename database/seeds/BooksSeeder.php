@@ -14,9 +14,9 @@ class BooksSeeder extends Seeder
     public function run()
     {
         //Sample menulis
-        $author1 = Author::create(['nama'=>'Mohammad Fauzil Adhmin']);
-        $author2 = Author::create(['nama'=>'Salin A. Fillah']);
-        $author3 = Author::create(['nama'=>'Aam Amiruddin']);
+        $author1 = Author::create(['name'=>'Mohammad Fauzil Adhmin']);
+        $author2 = Author::create(['name'=>'Salin A. Fillah']);
+        $author3 = Author::create(['name'=>'Aam Amiruddin']);
 
         //sample buku
         $book1 = Book::create(['title'=>'Kupinang Engkau Dengan Hamdalah', 'amount'=>3, 'author_id'=>$author1->id]);
