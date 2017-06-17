@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Html\Builder;
 use Yajra\Datatables\Datatables;
 use App\Book;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\File;
+use App\Http\Request\UpdateBookRequest;
+
 
 class BooksController extends Controller
 {
@@ -49,13 +53,27 @@ class BooksController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreBookRequest $request)
     {
         //
-        $this->validate($request, ['name'=>'required|unique:authors']);
-        $author = Author::create($request->only('name'));
-        Session::flash("flash_notification", ["level"=>"success", "message"=>"Berhasil menyimpan $author->name"]);
-        return redirect()->route('authors.index');
+        $book = Book::create($request->except('cover'));
+
+        if($request->hasFile('cover')) {
+            $uploaded_cover = $request->file('cover');
+
+            $extension = $uploaded_cover->GetClientOriginalExtension();
+
+            $filename = md5(time()). '.' . $extension;
+
+            $destinationPath = public_path() . DIRECTORY_SEPARATOR  . 'img';
+            $uploaded_cover->move($destinationPath, $filename);
+
+            $book->cover = $filename;
+            $book->save();
+        }
+
+        Session::flash("flash_notification", ["level"=>"success", "message"=>"Berhasil menyimpan $book->title"]);
+        return redirect()->route('books.index');
     }
 
     /**
@@ -78,8 +96,8 @@ class BooksController extends Controller
     public function edit($id)
     {
         //
-        $author = Author::find($id);
-        return view('authors.edit')->with(compact('author'));
+        $book = Book::find($id);
+        return view('Books.edit')->with(compact('book'));
     }
 
     /**
@@ -89,14 +107,39 @@ class BooksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateBookRequest $request, $id)
     {
         //
-        $this->validate($request, ['name'=>'required|unique:authors,name,'.$id]);
-        $author = Author::find($id);
-        $author->update($request->only('name'));
-        Session::flash("flash_notification", ["level"=>"success", "message"=>"Berhasil menyimpan $author->name"]);
-        return redirect()->route('authors.index');    
+        $book = Book::find($id);
+        $book->update($request->all());
+
+        if($request->hasFile('cover')) {
+            $filename = null;
+            $uploaded_cover = $request->file('cover');
+
+            $extension = $uploaded_cover->GetClientOriginalExtension();
+
+            $filename = md5(time()). '.' . $extension;
+
+            $destinationPath = public_path() . DIRECTORY_SEPARATOR  . 'img';
+            $uploaded_cover->move($destinationPath, $filename);  
+
+            if ($book->cover) {
+                $old_cover = $book->cover;
+                $filepath = public_path(). DIRECTORY_SEPARATOR. 'img'. DIRECTORY_SEPARATOR. $book->cover;
+
+            try {
+                File::delete($filepath);
+               } catch(FileNotFoundException $e) {
+
+                }
+            }
+
+            $book->cover = $filename;
+            $book->save();
+            }
+            Session::flash("flash_notification", ["level"=>"success", "message"=>"Berhasil menyimpan $book->title"]);
+        return redirect()->route('books.index');
     }
 
     /**
@@ -108,9 +151,21 @@ class BooksController extends Controller
     public function destroy($id)
     {
         //
-        if(!Author::destroy($id)) return redirect()->back();
+        $book = Book::find($id);
+
+        if ($book->cover) {
+                $old_cover = $book->cover;
+                $filepath = public_path(). DIRECTORY_SEPARATOR. 'img'. DIRECTORY_SEPARATOR. $book->cover;
+
+            try {
+                File::delete($filepath);
+               } catch(FileNotFoundException $e) {
+
+                }
+            }
+            $book->delete();
 
         Session::flash("flash_notification", ["level"=>"success", "message"=>"Penulis Berhasil Dihapus"]);
-        return redirect()->route('authors.index'); 
+        return redirect()->route('books.index'); 
     }
 }
