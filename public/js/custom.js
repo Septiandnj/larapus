@@ -1,5 +1,4 @@
-$(document).ready(function () {
-	//confirm delete
+$(document).ready(function() {
 	$(document.body).on('submit', '.js-confirm', function() {
 		var $el = $(this)
 		var text = $el.data('confirm') ? $el.data('confirm') : 'Anda Yakin Melakukan Tindakan Ini ?'
@@ -7,6 +6,6 @@ $(document).ready(function () {
 		return c;
 	});
 	$('.js-selectize').selectize({
-			sortField: 'text'
-		});
+		sortField:'text'
+	});
 });
